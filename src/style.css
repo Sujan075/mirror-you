@@ -27,6 +27,18 @@ canvas {
   height: 100vh;
 }
 
+/* Atmospheric cinematic vignette */
+#vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  box-shadow: inset 0 0 110px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* Center-screen Crosshair */
 #crosshair {
   position: fixed;

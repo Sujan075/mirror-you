@@ -13,6 +13,7 @@ if (!appElement) {
 
 // Populate UI overlays
 appElement.innerHTML = `
+  <div id="vignette"></div>
   <div id="crosshair"></div>
   <div id="interaction-prompt" class="hidden"></div>
   <div id="interaction-message" class="hidden"></div>
@@ -52,6 +53,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.25;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 appElement.appendChild(renderer.domElement);
 
 // 4. Room & Lighting
@@ -83,6 +86,12 @@ function showInteractionMessage(text: string, durationMs: number = 3000): void {
 // Create test interactable (pedestal in the room)
 const testPedestal = new TestPedestal(() => {
   showInteractionMessage('The room is silent.');
+});
+testPedestal.object.traverse((child) => {
+  if ((child as THREE.Mesh).isMesh) {
+    child.castShadow = true;
+    child.receiveShadow = true;
+  }
 });
 scene.add(testPedestal.object);
 interactionManager.register(testPedestal);
