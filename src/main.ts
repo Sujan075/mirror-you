@@ -158,9 +158,11 @@ function animate(): void {
   lastTime = currentTime;
 
   player.update(delta, room.bounds);
+  reflectionRoom.update(player.camera.position, player.camera.quaternion);
   interactionManager.update();
 
   renderer.render(scene, camera);
 }
 
 animate();
+

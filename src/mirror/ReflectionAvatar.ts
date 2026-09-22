@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+export type AvatarSyncMode = 'synced' | 'desynced';
+
 /**
  * Refined humanoid reflection avatar representing the player inside the twin room.
  * Built using stylized Three.js primitives (curved cylinders, capsules, and spheres)
@@ -8,6 +10,12 @@ import * as THREE from 'three';
 export class ReflectionAvatar {
   /** Root object containing the complete avatar hierarchy */
   public readonly root: THREE.Group;
+
+  /** Synchronization mode allowing future switching between synced and desynced behavior */
+  public syncMode: AvatarSyncMode = 'synced';
+
+  /** Cached reusable Euler for zero-allocation orientation updates */
+  private readonly tempEuler: THREE.Euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
   // Hierarchical part groups for future animation
   public readonly hipsGroup: THREE.Group;
@@ -398,4 +406,75 @@ export class ReflectionAvatar {
   public setRotationY(angleRad: number): void {
     this.root.rotation.y = angleRad;
   }
+
+  /** Switch between synced and future desynced behavior */
+  public setSyncMode(mode: AvatarSyncMode): void {
+    this.syncMode = mode;
+  }
+
+  /**
+   * Updates avatar mirroring based on player camera transform and mirror plane.
+   * If syncMode === 'synced', mirrors player position, yaw, and head pitch.
+   * If syncMode === 'desynced', leaves pose untouched for independent behavior.
+   */
+  public update(
+    playerPosition: THREE.Vector3,
+    playerRotation: THREE.Euler | THREE.Quaternion,
+    mirrorZ: number = -5.0
+  ): void {
+    if (this.syncMode !== 'synced') {
+      return;
+    }
+    this.syncWithPlayer(playerPosition, playerRotation, mirrorZ);
+  }
+
+  /**
+   * Directly synchronizes avatar transform to mirror the player across Z = mirrorZ.
+   * Formula:
+   *   X_twin = X_player
+   *   Y_avatar = 0
+   *   Z_twin = 2 * Z_mirror - Z_player
+   */
+  public syncWithPlayer(
+    playerPosition: THREE.Vector3,
+    playerRotation: THREE.Euler | THREE.Quaternion,
+    mirrorZ: number = -5.0
+  ): void {
+    // 1. Mirrored Position across mirror plane Z = mirrorZ
+    const xTwin = playerPosition.x;
+    const yAvatar = 0;
+    const rawZTwin = 2 * mirrorZ - playerPosition.z;
+
+    // Hard boundary safeguard: avatar must remain strictly behind the mirror
+    // with allowance for geometry volume so it never intersects or crosses Z = mirrorZ.
+    const maxAllowedZ = mirrorZ - 0.25;
+    const zTwin = Math.min(rawZTwin, maxAllowedZ);
+
+    this.root.position.set(xTwin, yAvatar, zTwin);
+
+    // 2. Extract yaw and pitch in 'YXZ' convention
+    let yaw = 0;
+    let pitch = 0;
+    if (playerRotation instanceof THREE.Quaternion) {
+      this.tempEuler.setFromQuaternion(playerRotation, 'YXZ');
+      yaw = this.tempEuler.y;
+      pitch = this.tempEuler.x;
+    } else {
+      this.tempEuler.copy(playerRotation).reorder('YXZ');
+      yaw = this.tempEuler.y;
+      pitch = this.tempEuler.x;
+    }
+
+    // 3. Reflect player's yaw on avatar body:
+    // When player faces mirror (yaw = 0), avatar faces player (root.rotation.y = 0).
+    // When player turns right (yaw < 0), avatar turns to its left (root.rotation.y > 0).
+    this.root.rotation.y = -yaw;
+
+    // 4. Reflect player's look/pitch through the head only:
+    // When player looks up (pitch > 0), avatar looks up (head.rotation.x < 0).
+    // Clamped within natural human neck range [-PI / 3, PI / 3]
+    const clampedPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, pitch));
+    this.headGroup.rotation.x = -clampedPitch;
+  }
 }
+

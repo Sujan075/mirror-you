@@ -99,6 +99,13 @@ export class ReflectionRoom {
     this.group.add(this.avatar.root);
   }
 
+  /**
+   * Updates reflection room dynamic entities (avatar synchronization across the mirror)
+   */
+  public update(playerPosition: THREE.Vector3, playerRotation: THREE.Euler | THREE.Quaternion): void {
+    this.avatar.update(playerPosition, playerRotation, MIRROR_Z);
+  }
+
   /** Twin floor, ceiling, and walls extending into Z in [-15, -5] */
   private createEnclosure(width: number, height: number, depth: number, centerZ: number): void {
     const floorTexture = createFloorTileTexture();
