@@ -67,11 +67,13 @@ export class MirrorAperture {
       opacity: 0.22,
       roughness: 0.08,
       metalness: 0.85,
+      depthWrite: false,
     });
 
     const glassGeo = new THREE.PlaneGeometry(openingWidth, openingHeight);
     this.glassMesh = new THREE.Mesh(glassGeo, glassMaterial);
     this.glassMesh.position.set(0, centerY, backZ - 0.01);
+    this.glassMesh.renderOrder = 1;
     this.group.add(this.glassMesh);
   }
 }

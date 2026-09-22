@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import './style.css';
 import { Room } from './world/Room.ts';
 import { MirrorAperture } from './mirror/MirrorAperture.ts';
+import { ReflectionRoom } from './mirror/ReflectionRoom.ts';
 import { PlayerController } from './player/PlayerController.ts';
 import { InteractionManager } from './interaction/InteractionManager.ts';
 import { TestPedestal } from './interaction/TestPedestal.ts';
@@ -66,10 +67,7 @@ scene.add(room.group);
 const mirrorAperture = new MirrorAperture();
 scene.add(mirrorAperture.group);
 
-// 6. Player Controller (First-person mouse-look + WASD)
-const player = new PlayerController(camera, renderer.domElement);
-
-// 6. Interaction System
+// 6. Interaction System & Test Pedestal
 const interactionManager = new InteractionManager(camera, () => player.isLocked);
 
 let messageTimeout: number | undefined;
@@ -100,6 +98,13 @@ testPedestal.object.traverse((child) => {
 });
 scene.add(testPedestal.object);
 interactionManager.register(testPedestal);
+
+// 7. Twin Reflection Room (Systematically derived from room & pedestal)
+const reflectionRoom = new ReflectionRoom(room, testPedestal.object);
+scene.add(reflectionRoom.group);
+
+// 8. Player Controller (First-person mouse-look + WASD)
+const player = new PlayerController(camera, renderer.domElement);
 
 // Wire focus changes to HUD prompt
 interactionManager.onFocusChange((focused) => {

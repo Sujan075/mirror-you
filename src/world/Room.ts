@@ -58,6 +58,15 @@ export class Room {
   public readonly group: THREE.Group;
   public readonly bounds: RoomBounds;
 
+  // Major room props exposed for systematic reflection derivation
+  public table!: THREE.Group;
+  public chair!: THREE.Group;
+  public exitDoor!: THREE.Group;
+  public clock!: THREE.Group;
+  public framedPicture!: THREE.Group;
+  public airVent!: THREE.Group;
+  public ceilingFixture!: THREE.Group;
+
   constructor() {
     this.group = new THREE.Group();
 
@@ -271,6 +280,7 @@ export class Room {
   private createExitDoor(depth: number): void {
     const doorGroup = new THREE.Group();
     const frontZ = depth / 2;
+    doorGroup.position.set(0, 0, frontZ);
 
     const frameMat = new THREE.MeshStandardMaterial({
       color: 0x22262d,
@@ -289,7 +299,7 @@ export class Room {
     // Outer door frame
     const frameGeo = new THREE.BoxGeometry(1.5, 2.45, 0.1);
     const frameMesh = new THREE.Mesh(frameGeo, frameMat);
-    frameMesh.position.set(0, 1.225, frontZ - 0.05);
+    frameMesh.position.set(0, 1.225, -0.05);
     frameMesh.castShadow = true;
     frameMesh.receiveShadow = true;
     doorGroup.add(frameMesh);
@@ -297,7 +307,7 @@ export class Room {
     // Recessed door panel
     const doorPanelGeo = new THREE.BoxGeometry(1.28, 2.35, 0.05);
     const doorPanelMesh = new THREE.Mesh(doorPanelGeo, panelMat);
-    doorPanelMesh.position.set(0, 1.225, frontZ - 0.06);
+    doorPanelMesh.position.set(0, 1.225, -0.06);
     doorPanelMesh.receiveShadow = true;
     doorGroup.add(doorPanelMesh);
 
@@ -308,31 +318,31 @@ export class Room {
     });
     const topInsetGeo = new THREE.BoxGeometry(0.96, 0.95, 0.02);
     const topInset = new THREE.Mesh(topInsetGeo, insetMat);
-    topInset.position.set(0, 1.65, frontZ - 0.09);
+    topInset.position.set(0, 1.65, -0.09);
     doorGroup.add(topInset);
 
     const btmInsetGeo = new THREE.BoxGeometry(0.96, 0.75, 0.02);
     const btmInset = new THREE.Mesh(btmInsetGeo, insetMat);
-    btmInset.position.set(0, 0.65, frontZ - 0.09);
+    btmInset.position.set(0, 0.65, -0.09);
     doorGroup.add(btmInset);
 
     // Door Hardware: escutcheon backplate, handle latch, and deadbolt keyhole
     const plateGeo = new THREE.BoxGeometry(0.06, 0.24, 0.015);
     const plateMesh = new THREE.Mesh(plateGeo, hardwareMat);
-    plateMesh.position.set(0.48, 1.05, frontZ - 0.095);
+    plateMesh.position.set(0.48, 1.05, -0.095);
     plateMesh.castShadow = true;
     doorGroup.add(plateMesh);
 
     const handleGeo = new THREE.BoxGeometry(0.14, 0.03, 0.04);
     const handleMesh = new THREE.Mesh(handleGeo, hardwareMat);
-    handleMesh.position.set(0.43, 1.05, frontZ - 0.115);
+    handleMesh.position.set(0.43, 1.05, -0.115);
     handleMesh.castShadow = true;
     doorGroup.add(handleMesh);
 
     const deadboltGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.02, 12);
     const deadboltMesh = new THREE.Mesh(deadboltGeo, hardwareMat);
     deadboltMesh.rotation.x = Math.PI / 2;
-    deadboltMesh.position.set(0.48, 1.2, frontZ - 0.095);
+    deadboltMesh.position.set(0.48, 1.2, -0.095);
     doorGroup.add(deadboltMesh);
 
     // Transom / Room exit plaque above door
@@ -342,9 +352,10 @@ export class Room {
     });
     const signGeo = new THREE.BoxGeometry(0.6, 0.12, 0.02);
     const signMesh = new THREE.Mesh(signGeo, signMat);
-    signMesh.position.set(0, 2.6, frontZ - 0.06);
+    signMesh.position.set(0, 2.6, -0.06);
     doorGroup.add(signMesh);
 
+    this.exitDoor = doorGroup;
     this.group.add(doorGroup);
   }
 
@@ -459,6 +470,7 @@ export class Room {
     tableGroup.add(bookMesh);
 
     tableGroup.position.set(-3.45, 0, 0.6);
+    this.table = tableGroup;
     this.group.add(tableGroup);
 
     // --- Chair (tucked by the table at X = -2.7, Z = 0.6) ---
@@ -516,6 +528,7 @@ export class Room {
 
     chairGroup.rotation.y = -Math.PI / 2 + 0.12;
     chairGroup.position.set(-2.7, 0, 0.6);
+    this.chair = chairGroup;
     this.group.add(chairGroup);
   }
 
@@ -558,6 +571,7 @@ export class Room {
     clockGroup.add(minHandMesh);
 
     clockGroup.position.set(3.97, 2.1, -0.5);
+    this.clock = clockGroup;
     this.group.add(clockGroup);
 
     // 2. Framed minimalist diagram on Left Wall (X = -4, Z = -2.0, Y = 1.85)
@@ -582,6 +596,7 @@ export class Room {
     frameGroup.add(canvasMesh);
 
     frameGroup.position.set(-3.97, 1.85, -2.0);
+    this.framedPicture = frameGroup;
     this.group.add(frameGroup);
 
     // 3. Wall ventilation grille on Right Wall near floor (X = 4, Z = 2.5, Y = 0.4)
@@ -607,6 +622,7 @@ export class Room {
     }
 
     ventGroup.position.set(3.97, 0.4, 2.5);
+    this.airVent = ventGroup;
     this.group.add(ventGroup);
   }
 
@@ -633,6 +649,7 @@ export class Room {
     diffuserMesh.position.set(0, height - 0.085, 0);
     fixtureGroup.add(diffuserMesh);
 
+    this.ceilingFixture = fixtureGroup;
     this.group.add(fixtureGroup);
   }
 
