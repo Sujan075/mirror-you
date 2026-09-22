@@ -42,6 +42,56 @@ canvas {
   z-index: 10;
 }
 
+/* Interaction Prompt HUD */
+#interaction-prompt {
+  position: fixed;
+  top: calc(50% + 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  color: #edf2f7;
+  font-size: 0.85rem;
+  letter-spacing: 0.04rem;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  white-space: nowrap;
+}
+
+#interaction-prompt.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Interaction Message Feedback HUD */
+#interaction-message {
+  position: fixed;
+  bottom: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(12, 16, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.65rem 1.4rem;
+  color: #dce3eb;
+  font-size: 0.95rem;
+  font-style: italic;
+  letter-spacing: 0.03rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  white-space: nowrap;
+}
+
+#interaction-message.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* Instructions & Pointer Lock Overlay */
 #instructions {
   position: fixed;
