@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { Room } from '../world/Room.ts';
+import { ReflectionAvatar } from './ReflectionAvatar.ts';
 
 /** Mirror plane world Z coordinate */
 export const MIRROR_Z = -5.0;
@@ -76,6 +77,7 @@ function createFloorTileTexture(): THREE.CanvasTexture | null {
  */
 export class ReflectionRoom {
   public readonly group: THREE.Group;
+  public readonly avatar: ReflectionAvatar;
 
   constructor(room?: Room, pedestalObject?: THREE.Object3D) {
     this.group = new THREE.Group();
@@ -91,6 +93,10 @@ export class ReflectionRoom {
     this.createTrims(width, height, depth, centerZ);
     this.createReflectedProps(room, pedestalObject);
     this.createReflectedLighting(height);
+
+    // Humanoid avatar visible inside the twin room
+    this.avatar = new ReflectionAvatar();
+    this.group.add(this.avatar.root);
   }
 
   /** Twin floor, ceiling, and walls extending into Z in [-15, -5] */
