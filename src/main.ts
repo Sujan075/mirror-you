@@ -1,60 +1,97 @@
-import './style.css'
-import heroImg from './assets/hero.png'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.ts'
+import * as THREE from 'three';
+import './style.css';
+import { Room } from './world/Room.ts';
+import { PlayerController } from './player/PlayerController.ts';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
+const appElement = document.querySelector<HTMLDivElement>('#app');
+
+if (!appElement) {
+  throw new Error('Root #app container not found');
+}
+
+// Populate UI overlays
+appElement.innerHTML = `
+  <div id="crosshair"></div>
+  <div id="instructions">
+    <div class="instructions-card">
+      <h1>MIRROR // YOU</h1>
+      <p class="prompt">Click anywhere to enter</p>
+      <div class="controls-hint">
+        <span><strong>WASD</strong> Move</span>
+        <span><strong>Mouse</strong> Look</span>
+        <span><strong>ESC</strong> Pause</span>
+      </div>
+    </div>
   </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+`;
 
-<div class="ticks"></div>
+const instructionsElement = document.querySelector<HTMLDivElement>('#instructions')!;
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+// 1. Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x282c34);
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+// 2. Perspective Camera
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  100
+);
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+// 3. WebGL Renderer
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+appElement.appendChild(renderer.domElement);
+
+// 4. Room & Lighting
+const room = new Room();
+scene.add(room.group);
+
+// 5. Player Controller (First-person mouse-look + WASD)
+const player = new PlayerController(camera, renderer.domElement);
+
+// Manage pointer lock overlay
+instructionsElement.addEventListener('click', () => {
+  player.lock();
+});
+
+player.onLockStateChange((isLocked) => {
+  if (isLocked) {
+    instructionsElement.classList.add('hidden');
+  } else {
+    instructionsElement.classList.remove('hidden');
+  }
+});
+
+// 6. Responsive resizing
+window.addEventListener('resize', () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+// 7. Animation / Tick loop
+let lastTime = performance.now();
+
+function animate(): void {
+  requestAnimationFrame(animate);
+
+  const currentTime = performance.now();
+  const delta = Math.min((currentTime - lastTime) / 1000, 0.1);
+  lastTime = currentTime;
+
+  player.update(delta, room.bounds);
+
+  renderer.render(scene, camera);
+}
+
+animate();
