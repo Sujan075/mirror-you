@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import './style.css';
 import { Room } from './world/Room.ts';
+import { MirrorAperture } from './mirror/MirrorAperture.ts';
 import { PlayerController } from './player/PlayerController.ts';
 import { InteractionManager } from './interaction/InteractionManager.ts';
 import { TestPedestal } from './interaction/TestPedestal.ts';
@@ -61,7 +62,11 @@ appElement.appendChild(renderer.domElement);
 const room = new Room();
 scene.add(room.group);
 
-// 5. Player Controller (First-person mouse-look + WASD)
+// 5. Mirror Aperture & Frame
+const mirrorAperture = new MirrorAperture();
+scene.add(mirrorAperture.group);
+
+// 6. Player Controller (First-person mouse-look + WASD)
 const player = new PlayerController(camera, renderer.domElement);
 
 // 6. Interaction System

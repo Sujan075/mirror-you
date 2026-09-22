@@ -133,12 +133,34 @@ export class Room {
     ceilingMesh.position.y = height;
     this.group.add(ceilingMesh);
 
-    // 3. Back Wall (Z = -depth/2) - focal wall for the mirror
-    const backWallGeo = new THREE.PlaneGeometry(width, height);
-    const backWallMesh = new THREE.Mesh(backWallGeo, backWallMaterial);
-    backWallMesh.position.set(0, height / 2, -depth / 2);
-    backWallMesh.receiveShadow = true;
-    this.group.add(backWallMesh);
+    // 3. Back Wall with Central Mirror Aperture Opening (opening: W=2.8m, H=2.2m, centered at X=0, Y=1.5, Z=-depth/2)
+    // 3a. Bottom Wall Section (Y: 0 to 0.4, height 0.4, full width 8.0)
+    const btmWallGeo = new THREE.PlaneGeometry(width, 0.4);
+    const btmWallMesh = new THREE.Mesh(btmWallGeo, backWallMaterial);
+    btmWallMesh.position.set(0, 0.2, -depth / 2);
+    btmWallMesh.receiveShadow = true;
+    this.group.add(btmWallMesh);
+
+    // 3b. Top Wall Section (Y: 2.6 to 3.2, height 0.6, full width 8.0)
+    const topWallGeo = new THREE.PlaneGeometry(width, 0.6);
+    const topWallMesh = new THREE.Mesh(topWallGeo, backWallMaterial);
+    topWallMesh.position.set(0, 2.9, -depth / 2);
+    topWallMesh.receiveShadow = true;
+    this.group.add(topWallMesh);
+
+    // 3c. Left Wall Section (X: -4.0 to -1.4, width 2.6, Y: 0.4 to 2.6, height 2.2)
+    const leftWallSecGeo = new THREE.PlaneGeometry(2.6, 2.2);
+    const leftWallSecMesh = new THREE.Mesh(leftWallSecGeo, backWallMaterial);
+    leftWallSecMesh.position.set(-2.7, 1.5, -depth / 2);
+    leftWallSecMesh.receiveShadow = true;
+    this.group.add(leftWallSecMesh);
+
+    // 3d. Right Wall Section (X: 1.4 to 4.0, width 2.6, Y: 0.4 to 2.6, height 2.2)
+    const rightWallSecGeo = new THREE.PlaneGeometry(2.6, 2.2);
+    const rightWallSecMesh = new THREE.Mesh(rightWallSecGeo, backWallMaterial);
+    rightWallSecMesh.position.set(2.7, 1.5, -depth / 2);
+    rightWallSecMesh.receiveShadow = true;
+    this.group.add(rightWallSecMesh);
 
     // 4. Front Wall (Z = depth/2)
     const frontWallGeo = new THREE.PlaneGeometry(width, height);
@@ -198,12 +220,18 @@ export class Room {
     const railHeight = 0.05;
     const railDepth = 0.025;
 
-    const zRailGeo = new THREE.BoxGeometry(width, railHeight, railDepth);
-    const backRail = new THREE.Mesh(zRailGeo, trimMaterial);
-    backRail.position.set(0, 1.0, -depth / 2 + railDepth / 2);
-    this.group.add(backRail);
+    // Back chair rails (flanking the mirror opening so they do not cross the aperture)
+    const backRailGeo = new THREE.BoxGeometry(2.6, railHeight, railDepth);
+    const backLeftRail = new THREE.Mesh(backRailGeo, trimMaterial);
+    backLeftRail.position.set(-2.7, 1.0, -depth / 2 + railDepth / 2);
+    this.group.add(backLeftRail);
 
-    const frontRail = new THREE.Mesh(zRailGeo, trimMaterial);
+    const backRightRail = new THREE.Mesh(backRailGeo, trimMaterial);
+    backRightRail.position.set(2.7, 1.0, -depth / 2 + railDepth / 2);
+    this.group.add(backRightRail);
+
+    const frontRailGeo = new THREE.BoxGeometry(width, railHeight, railDepth);
+    const frontRail = new THREE.Mesh(frontRailGeo, trimMaterial);
     frontRail.position.set(0, 1.0, depth / 2 - railDepth / 2);
     this.group.add(frontRail);
 
